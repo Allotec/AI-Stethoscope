@@ -88,77 +88,11 @@ print("Preprocessing Started")
 x_data, y_data = preprocess(directories)
 
 print("Preprocessing Done")
-print(y_data)
 
 # Print count of y_data
 unique, counts = np.unique(y_data, return_counts=True)
 print(np.asarray((unique, counts)).T)
 
-# trim some data away to balance it out
-a = 0
-copd = 0
-hf = 0
-n = 0
-pn = 0
-y_data_copy = []
-x_data_copy = []
-for i in range(len(y_data)):
-    if y_data[i] == "asthma":
-        if a < 100:
-            a += 1
-            y_data_copy.append(y_data[i])
-            x_data_copy.append(x_data[i])
-    elif y_data[i] == "copd":
-        if copd < 100:
-            copd += 1
-            y_data_copy.append(y_data[i])
-            x_data_copy.append(x_data[i])
-    elif y_data[i] == "heart failure":
-        if hf < 100:
-            hf += 1
-            y_data_copy.append(y_data[i])
-            x_data_copy.append(x_data[i])
-    elif y_data[i] == "n":
-        if n < 100:
-            n += 1
-            y_data_copy.append(y_data[i])
-            x_data_copy.append(x_data[i])
-    elif y_data[i] == "pneumonia":
-        if pn < 100:
-            pn += 1
-            y_data_copy.append(y_data[i])
-            x_data_copy.append(x_data[i])
-    else:
-        y_data_copy.append(y_data[i])
-        x_data_copy.append(x_data[i])
-
-b = 42
-lf = 69
-pf = 57
-
-unique, counts = np.unique(y_data_copy, return_counts=True)
-print(np.asarray((unique, counts)).T)
-# Sample diagnosis with less than 100 records multiple times
-for i in range(len(y_data)):
-    if y_data[i] == "bron":
-        if b < 100:
-            b += 1
-            y_data_copy.append(y_data[i])
-            x_data_copy.append(x_data[i])
-    elif y_data[i] == "lung fibrosis":
-        if lf < 100:
-            lf += 1
-            y_data_copy.append(y_data[i])
-            x_data_copy.append(x_data[i])
-    elif y_data[i] == "plueral effusion":
-        if pf < 100:
-            pf += 1
-            y_data_copy.append(y_data[i])
-            x_data_copy.append(x_data[i])
-
-unique, counts = np.unique(y_data_copy, return_counts=True)
-print(np.asarray((unique, counts)).T)
-# Reshape y_data for encoding
 y_data = np.array(y_data).reshape(-1, 1)
 
 # Perform one hot encoing on y_data
@@ -278,7 +212,7 @@ optim = torch.optim.Adam(model.parameters())
 
 loss_vals = []
 
-for epoch in range(500):
+for epoch in range(2000):
     for batch in train_dl:
         # grab data
         X, y = batch

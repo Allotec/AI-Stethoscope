@@ -214,45 +214,49 @@ class DiagnosisNetwork(nn.Module):
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = DiagnosisNetwork().to(device)
-print(device)
 
 lossfn = nn.CrossEntropyLoss()
 optim = torch.optim.Adam(model.parameters())
 
 loss_vals = []
-EPOCHS = 500
+EPOCHS = 1000
+
+from tqdm import tqdm
 
 for epoch in range(EPOCHS):
-    for batch in train_dl:
-        # grab data
-        x, y = batch
-        input_2d_array, input_scalar = x
+    epoch_loss = 0
 
-        # Reshape mode size for network
-        input_scalar = input_scalar.unsqueeze(1)
+    with tqdm(train_dl, unit="batch") as tepoch:
+        for [x, y] in tepoch:
+            tepoch.set_description(f"Epoch {epoch}")
+            input_2d_array, input_scalar = x
 
-        # Correct types and send to device
-        input_scalar = input_scalar.float()
-        input_2d_array, input_scalar, y = (
-            input_2d_array.to(device),
-            input_scalar.to(device),
-            y.to(device),
-        )
-        # input_2d_array, y = input_2d_array.to(device), y.to(device)
+            # Reshape mode size for network
+            input_scalar = input_scalar.unsqueeze(1)
 
-        # forward pass
-        pred_probab = model(input_2d_array, input_scalar)
-        # pred_probab = model(input_2d_array)
+            # Correct types and send to device
+            input_scalar = input_scalar.float()
+            input_2d_array, input_scalar, y = (
+                input_2d_array.to(device),
+                input_scalar.to(device),
+                y.to(device),
+            )
 
-        # calculate loss
-        loss = lossfn(pred_probab, y)
+            # forward pass
+            pred_probab = model(input_2d_array, input_scalar)
 
-        # backpropagation
-        optim.zero_grad()
-        loss.backward()
-        optim.step()
+            # calculate loss
+            loss = lossfn(pred_probab, y)
 
-    loss_vals.append(loss.item())
+            # backpropagation
+            optim.zero_grad()
+            loss.backward()
+            optim.step()
+            tepoch.set_postfix(loss=loss.item())
+            epoch_loss += loss.item()
+
+        epoch_avg_loss = epoch_loss / len(train_dl)
+        loss_vals.append(epoch_avg_loss)
 
 correct = 0
 total = 0
@@ -281,15 +285,13 @@ with torch.no_grad():
         total += y.size(0)
         correct += (yhat == y.argmax(1)).sum().item()
 
-print(correct)
-print(total)
 
 accuracy = 100 * (correct / total)
 
 print(f"accuracy: {accuracy}%")
 
 epochs = [x for x in range(len(loss_vals))]
-window_size = int(EPOCHS / 80)
+window_size = int(EPOCHS / 100)
 moving_average = np.convolve(
     loss_vals, np.ones(window_size) / window_size, mode="valid"
 )

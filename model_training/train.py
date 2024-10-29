@@ -13,6 +13,8 @@ BATCH_SIZE = 150
 EPOCHS = 1000
 LOSS_SMOOTHING = 100
 
+IMG_DIR = ".out_files"
+
 
 def main():
     directories = [os.path.join("dataset", "Audio Files")]
@@ -31,7 +33,11 @@ def main():
     accuracy = test_accuracy(device, test_dl, model)
     print(f"Top 1 Accuracy: {accuracy}%")
 
-    plot_loss(loss_vals, LOSS_SMOOTHING, "loss.png")
+    if not os.path.exists(IMG_DIR):
+        os.mkdir(IMG_DIR)
+
+    loss_img = os.path.join(IMG_DIR, "loss.png")
+    plot_loss(loss_vals, LOSS_SMOOTHING, loss_img)
 
 
 def plot_loss(loss_vals, smoothing, output_path):

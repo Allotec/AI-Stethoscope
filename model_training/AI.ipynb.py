@@ -33,6 +33,7 @@ def process_data(file_name):
 
         # Generate spectrogram image
         spectrogram = plt.specgram(arr, Fs=sample_rate)[0]
+        plt.close()
 
         mfccs_resized = (
             torch.FloatTensor(mfccs).unsqueeze(0).unsqueeze(0)
@@ -219,8 +220,9 @@ lossfn = nn.CrossEntropyLoss()
 optim = torch.optim.Adam(model.parameters())
 
 loss_vals = []
+EPOCHS = 500
 
-for epoch in range(500):
+for epoch in range(EPOCHS):
     for batch in train_dl:
         # grab data
         x, y = batch
@@ -250,7 +252,7 @@ for epoch in range(500):
         loss.backward()
         optim.step()
 
-    loss_vals.append(loss.item)
+    loss_vals.append(loss.item())
 
 correct = 0
 total = 0
@@ -285,3 +287,24 @@ print(total)
 accuracy = 100 * (correct / total)
 
 print(f"accuracy: {accuracy}%")
+
+epochs = [x for x in range(len(loss_vals))]
+window_size = int(EPOCHS / 80)
+moving_average = np.convolve(
+    loss_vals, np.ones(window_size) / window_size, mode="valid"
+)
+
+plt.plot(
+    epochs[window_size - 1 :],
+    moving_average,
+    linestyle="-",
+    color="b",
+    label="Loss",
+)
+plt.xlabel("Epochs")
+plt.ylabel("Loss")
+plt.title("Model Loss Over Epochs")
+plt.xticks(epochs[:: int(len(epochs) / 10)])
+plt.grid()
+plt.legend()
+plt.savefig("loss.png", dpi=300)

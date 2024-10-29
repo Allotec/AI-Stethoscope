@@ -16,30 +16,28 @@ def preprocess(directories):
     x_data = []
     y_data = []
     for directory in directories:
-        for filename in os.listdir(directory):
-            f = os.path.join(directory, filename)
+        files = [
+            file for file in os.listdir(directory) if not ("and" in file or "+" in file)
+        ]
 
-            if "and" in filename or "+" in filename:
-                continue
+        for filename in files:
+            f = os.path.join(directory, filename)
 
             # Create 1d array from audio input
             original_arr, sample_rate = librosa.load(f, sr=4000)
-            original_arr = torch.Tensor(original_arr).reshape(1, len(original_arr))
+            original_arr = original_arr.reshape(1, len(original_arr))
 
             # Loop through segments of each file
             # Each segment will be 10000 elements long which is 2.5 seconds of audio recording
             for i in range(0, len(original_arr[0]) - 10000, 10000):
                 arr = original_arr[0][i : i + 10000]
 
-                arr = arr.view(-1)
-
                 # Generate MFCCs
                 # Doing it this way makes the mfccs shape (20, 137)
-                mfccs = librosa.feature.mfcc(y=arr.numpy(), sr=sample_rate)
+                mfccs = librosa.feature.mfcc(y=arr, sr=sample_rate)
 
                 # Generate spectrogram image
                 spectrogram = plt.specgram(arr, Fs=sample_rate)[0]
-                plt.close()
 
                 mfccs_resized = (
                     torch.FloatTensor(mfccs).unsqueeze(0).unsqueeze(0)
@@ -208,15 +206,14 @@ print(device)
 
 lossfn = nn.CrossEntropyLoss()
 optim = torch.optim.Adam(model.parameters())
-# optim = torch.optim.SGD(model.parameters(), lr=.1, momentum=.9)
 
 loss_vals = []
 
-for epoch in range(2000):
+for epoch in range(500):
     for batch in train_dl:
         # grab data
-        X, y = batch
-        input_2d_array, input_scalar = X
+        x, y = batch
+        input_2d_array, input_scalar = x
 
         # Reshape mode size for network
         input_scalar = input_scalar.unsqueeze(1)
@@ -251,8 +248,8 @@ with torch.no_grad():
     model.eval()
     for batch in test_dl:
         # grab data
-        X, y = batch
-        input_2d_array, input_scalar = X
+        x, y = batch
+        input_2d_array, input_scalar = x
 
         # Reshape image and mode size for network
         input_scalar = input_scalar.unsqueeze(1)

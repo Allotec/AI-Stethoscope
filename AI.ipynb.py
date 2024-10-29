@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 
 import librosa
@@ -6,9 +8,10 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn.functional as F
-import torchaudio
 from scipy.io.wavfile import read
 from sklearn.preprocessing import OneHotEncoder
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 def preprocess(directories):
@@ -22,7 +25,8 @@ def preprocess(directories):
                 continue
 
             # Create 1d array from audio input
-            original_arr, sample_rate = torchaudio.load(f)
+            original_arr, sample_rate = librosa.load(f, sr=4000)
+            original_arr = torch.Tensor(original_arr).reshape(1, len(original_arr))
 
             # Loop through segments of each file
             # Each segment will be 10000 elements long which is 2.5 seconds of audio recording
@@ -266,13 +270,14 @@ class DiagnosisNetwork(nn.Module):
         return final_output
 
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
 model = DiagnosisNetwork().to(device)
 print(device)
 
 lossfn = nn.CrossEntropyLoss()
 optim = torch.optim.Adam(model.parameters())
 # optim = torch.optim.SGD(model.parameters(), lr=.1, momentum=.9)
+
+loss_vals = []
 
 for epoch in range(500):
     for batch in train_dl:
@@ -304,8 +309,7 @@ for epoch in range(500):
         loss.backward()
         optim.step()
 
-    # print loss for each epoch
-    print(f"Epoch: {epoch}, Loss: {loss.item()}")
+    loss_vals.append(loss.item)
 
 correct = 0
 total = 0

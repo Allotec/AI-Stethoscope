@@ -11,8 +11,6 @@ import torch.nn.functional as F
 from scipy.io.wavfile import read
 from sklearn.preprocessing import OneHotEncoder
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
-
 
 def preprocess(directories):
     x_data = []
@@ -270,6 +268,7 @@ class DiagnosisNetwork(nn.Module):
         return final_output
 
 
+device = "cuda" if torch.cuda.is_available() else "cpu"
 model = DiagnosisNetwork().to(device)
 print(device)
 

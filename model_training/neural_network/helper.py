@@ -27,15 +27,17 @@ def get_datasets(x_data, y_data, test_amount, batch_size, data_set_class):
     return train_dl, test_dl
 
 
-def train(device, train_dl, optim, lossfn, model, epochs):
+def train(device, train_dl, optim, lossfn, model, epochs, epoch_start):
     loss_vals = []
+    model.train()
 
     for epoch in range(epochs):
         epoch_loss = 0
 
         with tqdm(train_dl, unit="batch") as tepoch:
             for [x, y] in tepoch:
-                tepoch.set_description(f"Epoch {epoch}")
+                current_epoch = epoch_start + epoch
+                tepoch.set_description(f"Epoch {current_epoch}")
                 input_2d_array, input_scalar = x
 
                 # Reshape mode size for network
@@ -68,7 +70,7 @@ def train(device, train_dl, optim, lossfn, model, epochs):
     return loss_vals
 
 
-def test_accuracy(device, test_dl, model):
+def evaluate(device, test_dl, model):
     correct = 0
     total = 0
 
@@ -80,21 +82,23 @@ def test_accuracy(device, test_dl, model):
             x, y = batch
             input_2d_array, input_scalar = x
 
-            # Reshape image and mode size for network
-            input_scalar = input_scalar.unsqueeze(1)
+            # Reshape scalar input for network and ensure correct types
+            input_scalar = input_scalar.unsqueeze(1).float()
 
-            # Correct types and send to device
-            input_scalar = input_scalar.float()
+            # Send tensors to the device
             input_2d_array, input_scalar, y = (
                 input_2d_array.to(device),
                 input_scalar.to(device),
                 y.to(device),
             )
-            input_2d_array, y = input_2d_array.to(device), y.to(device)
 
+            # Get model predictions
             pred_probab = model(input_2d_array, input_scalar)
             yhat = pred_probab.argmax(1).float()
+
+            # Count correct predictions
             total += y.size(0)
             correct += (yhat == y.argmax(1)).sum().item()
 
-    return 100 * (correct / total)
+    top1 = 100 * (correct / total)
+    return top1

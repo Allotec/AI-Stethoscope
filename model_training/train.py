@@ -7,14 +7,12 @@ import numpy as np
 import torch
 import torch.nn as nn
 from neural_network import *
-from torchsummary import summary
-from torchview import draw_graph
 
 TEST_AMOUNT = 0.2
 BATCH_SIZE = 30
 DIV_FAC = 10
 EPOCHS = 1000
-LOSS_SMOOTHING = EPOCHS // DIV_FAC
+STEPS = EPOCHS // DIV_FAC
 
 IMG_DIR = ".out_files"
 
@@ -23,6 +21,7 @@ def main():
     if not os.path.exists(IMG_DIR):
         os.mkdir(IMG_DIR)
 
+    print("Preprocessing Audio data")
     directories = [os.path.join("dataset", "Audio Files")]
     x_data, y_data = preprocess(directories)
 
@@ -36,24 +35,22 @@ def main():
     lossfn = nn.CrossEntropyLoss()
     optim = torch.optim.Adam(model.parameters())
 
-    # TODO: Get the summary fully working
-    # print_summary(model)
-    output_graph_png(model, train_dl)
+    model_summary(model, optim)
 
     loss_vals = []
     accuracy_hist = []
 
     top_1 = evaluate(device, test_dl, model)
     accuracy_hist.append(top_1)
-    for i in range(1):
+    for i in range(DIV_FAC):
         loss = train(
             device,
             train_dl,
             optim,
             lossfn,
             model,
-            LOSS_SMOOTHING,
-            LOSS_SMOOTHING * i,
+            STEPS,
+            STEPS * i,
         )
         top_1 = evaluate(device, test_dl, model)
 
@@ -64,18 +61,24 @@ def main():
     plot_accuracy(accuracy_hist, accuracy_img)
 
     loss_img = os.path.join(IMG_DIR, "loss.png")
-    plot_loss(loss_vals, LOSS_SMOOTHING, loss_img)
+    plot_loss(loss_vals, loss_img)
+
+    weights_path = os.path.join(os.getcwd(), "model_weights.pt")
+    torch.save(model.state_dict(), weights_path)
 
 
-def print_summary(model):
-    input_2d_shape = (2, 129, 77)
-    input_scalar_shape = (1,)
-    size = np.array([input_2d_shape, input_scalar_shape], dtype="object")
-    summary(model, input_size=size, batch_size=BATCH_SIZE)
+def model_summary(model, optim):
+    print("Model's state_dict:")
+    for param_tensor in model.state_dict():
+        print(param_tensor, "\t", model.state_dict()[param_tensor].size())
+
+    print("Optimizer's state_dict:")
+    for var_name in optim.state_dict():
+        print(var_name, "\t", optim.state_dict()[var_name])
 
 
 def plot_accuracy(accuracy, output_path):
-    epochs = [x for x in range(len(accuracy))]
+    epochs = list(map(lambda x: x * STEPS, [x for x in range(len(accuracy))]))
 
     plt.plot(
         epochs,
@@ -85,12 +88,10 @@ def plot_accuracy(accuracy, output_path):
         label="Accuracy",
     )
 
-    plt.title("Model Accuracy Over Epochs")
+    plt.title("Model Top 1 Accuracy Over Epochs")
     plt.xlabel("Epochs")
     plt.ylabel("Top 1 Accuracy")
 
-    epochs = epochs.append(EPOCHS)
-    plt.xticks(epochs)
     plt.ylim(0, 100)
 
     plt.grid()
@@ -99,17 +100,12 @@ def plot_accuracy(accuracy, output_path):
     plt.close()
 
 
-def plot_loss(loss_vals, smoothing, output_path):
+def plot_loss(loss_vals, output_path):
     epochs = [x for x in range(len(loss_vals))]
-    epochs = list(map(lambda x: x + 1, epochs))
-
-    moving_average = np.convolve(
-        loss_vals, np.ones(smoothing) / smoothing, mode="valid"
-    )
 
     plt.plot(
-        epochs[smoothing - 1 :],
-        moving_average,
+        epochs,
+        loss_vals,
         linestyle="-",
         color="b",
         label="Loss",
@@ -119,7 +115,6 @@ def plot_loss(loss_vals, smoothing, output_path):
     plt.xlabel("Epochs")
     plt.ylabel("Loss Smoothed")
 
-    plt.xticks(epochs[:: int(len(epochs) / 10)].append(EPOCHS))
     plt.ylim(0, max(loss_vals))
 
     plt.grid()
@@ -134,18 +129,6 @@ def get_data_sample(train_dl):
     input_scalar = input_scalar.unsqueeze(1).float()
 
     return input_2d_array, input_scalar
-
-
-def output_graph_png(model, train_dl):
-    input_data, scalar = get_data_sample(train_dl)
-    draw_graph(
-        model,
-        input_data=input_data,
-        input_scalar=scalar,
-        graph_dir="LR",
-        save_graph=True,
-        directory=IMG_DIR,
-    )
 
 
 if __name__ == "__main__":

@@ -6,6 +6,7 @@ import tkinter as tk
 import wave
 
 import pyaudio
+import soundfile as sf
 
 from neural_network import *
 
@@ -18,38 +19,68 @@ model.eval()
 
 # Function to handle audio recording
 def record_audio(timer_label, done_label):
-    RECORD_SECONDS = 10
-    WAVE_OUTPUT_FILENAME = "output.wav"
-    FORMAT = pyaudio.paInt16
-    CHANNELS = 1
-    RATE = 4000
-    CHUNK = 1024
+    CHANNELS = 1  # Mono audio
+    SAMPLE_RATE = 44100  # Original sampling rate
+    DURATION = 10  # Record duration in seconds
+    FORMAT = pyaudio.paInt16  # 16-bit format
+    OUTPUT_FILE = "resampled_audio.wav"  # Output file path
+    TARGET_SAMPLE_RATE = 4000  # Target sampling rate
+    BUFFER_SIZE = 4096
 
     audio = pyaudio.PyAudio()
-    stream = audio.open(
-        format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK
-    )
+    device_index = -1
+    for i in range(audio.get_device_count()):
+        device_info = audio.get_device_info_by_index(i)["name"]
 
+        if "CUBILUX HLMS-C5: USB Audio" in str(device_info):
+            device_index = i
+            break
+
+    if device_index == -1:
+        print("Couldn't find input device")
+
+    stream = audio.open(
+        format=FORMAT,
+        channels=CHANNELS,
+        rate=SAMPLE_RATE,
+        input=True,
+        frames_per_buffer=BUFFER_SIZE,
+        input_device_index=device_index,
+    )
     frames = []
-    for i in range(RECORD_SECONDS):
-        time.sleep(1)
-        timer_label.config(text=f"Time: {i + 1}s")
+
+    frames_len = int(SAMPLE_RATE / BUFFER_SIZE * DURATION)
+    for i in range(frames_len):
+        data = stream.read(BUFFER_SIZE)
+        timer_label.config(text=f"Frames: {i + 1} / " + str(frames_len))
         timer_label.update_idletasks()
-        data = stream.read(CHUNK)
         frames.append(data)
 
+    print("Recording complete.")
+
+    # Stop and close the stream
     stream.stop_stream()
     stream.close()
     audio.terminate()
 
-    wf = wave.open(WAVE_OUTPUT_FILENAME, "wb")
-    wf.setnchannels(CHANNELS)
-    wf.setsampwidth(audio.get_sample_size(FORMAT))
-    wf.setframerate(RATE)
-    wf.writeframes(b"".join(frames))
-    wf.close()
+    # Convert byte data to numpy array
+    audio_data = np.frombuffer(b"".join(frames), dtype=np.int16)
 
-    input_data = data_from_file(WAVE_OUTPUT_FILENAME)
+    # Resample the audio
+    print("Resampling...")
+    audio_data_float = (
+        audio_data.astype(np.float32) / np.iinfo(np.int16).max
+    )  # Convert to float32
+    resampled_audio = librosa.resample(
+        audio_data_float, orig_sr=SAMPLE_RATE, target_sr=TARGET_SAMPLE_RATE
+    )
+
+    # Save to file
+    print("Saving to file...")
+    sf.write(OUTPUT_FILE, resampled_audio, samplerate=TARGET_SAMPLE_RATE)
+    print(f"Audio saved to {OUTPUT_FILE}.")
+
+    input_data = data_from_file(OUTPUT_FILE)
     diagnoses = get_diagnosis(device, input_data, model)
 
     # Update GUI to show "Done"
@@ -97,7 +128,7 @@ record_button = tk.Button(
 record_button.pack(expand=True)
 
 # Add a timer label
-timer_label = tk.Label(app, text="Time: 0s", font=("Arial", 16))
+timer_label = tk.Label(app, text="Frames: ", font=("Arial", 16))
 timer_label.pack(expand=True)
 
 # Add a label for the "Done" message

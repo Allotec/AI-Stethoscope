@@ -56,7 +56,7 @@ def record_audio(timer_label, done_label):
         timer_label.update_idletasks()
         frames.append(data)
 
-    print("Recording complete.")
+    record_button.config(text="Recording complete.", state="disabled")
 
     # Stop and close the stream
     stream.stop_stream()
@@ -67,7 +67,7 @@ def record_audio(timer_label, done_label):
     audio_data = np.frombuffer(b"".join(frames), dtype=np.int16)
 
     # Resample the audio
-    print("Resampling...")
+    record_button.config(text="Resampling...", state="disabled")
     audio_data_float = (
         audio_data.astype(np.float32) / np.iinfo(np.int16).max
     )  # Convert to float32
@@ -80,8 +80,11 @@ def record_audio(timer_label, done_label):
     sf.write(OUTPUT_FILE, resampled_audio, samplerate=TARGET_SAMPLE_RATE)
     print(f"Audio saved to {OUTPUT_FILE}.")
 
+    record_button.config(text="Computing Diagnosis from model", state="disabled")
     input_data = data_from_file(OUTPUT_FILE)
     diagnoses = get_diagnosis(device, input_data, model)
+
+    print(diagnoses)
 
     # Update GUI to show "Done"
     timer_label.config(text="Time: 0s")

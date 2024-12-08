@@ -51,7 +51,6 @@ def record_audio(timer_label, done_label):
 
     input_data = data_from_file(WAVE_OUTPUT_FILENAME)
     diagnoses = get_diagnosis(device, input_data, model)
-    print(diagnoses)
 
     # Update GUI to show "Done"
     timer_label.config(text="Time: 0s")

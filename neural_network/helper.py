@@ -5,6 +5,17 @@ from sklearn.preprocessing import OneHotEncoder
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
+DIAGNOSES = [
+    "Asthma",
+    "Bron",
+    "Copd",
+    "Heart Failure",
+    "Lung fibrosis",
+    "None",
+    "Plueral Effusion",
+    "Pneumonia",
+]
+
 
 def get_datasets(x_data, y_data, test_amount, batch_size, data_set_class):
     y_data = np.array(y_data).reshape(-1, 1)
@@ -102,3 +113,33 @@ def evaluate(device, test_dl, model):
 
     top1 = 100 * (correct / total)
     return top1
+
+
+def get_diagnosis(device, data, model):
+    diagnoses = []
+
+    with torch.no_grad():
+        model.eval()
+
+        for x in data:
+            input_2d_array, input_scalar = x
+            print(input_scalar)
+
+            input_2d_array = input_2d_array.unsqueeze(0).float()
+            input_scalar = torch.FloatTensor(input_scalar).unsqueeze(1).float()
+
+            # Send tensors to the device
+            input_2d_array, input_scalar = (
+                input_2d_array.to(device),
+                input_scalar.to(device),
+            )
+
+            # Get model predictions
+            pred_probab = model(input_2d_array, input_scalar)
+            diagnosis_index = pred_probab.argmax(1).float().tolist()
+            diagnosis_index = int(diagnosis_index[0])
+            diagnosis = DIAGNOSES[diagnosis_index]
+
+            diagnoses.append(diagnosis)
+
+    return diagnoses

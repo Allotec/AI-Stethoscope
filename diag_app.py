@@ -7,6 +7,14 @@ import wave
 
 import pyaudio
 
+from neural_network import *
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+model = DiagnosisNetwork().to(device)
+weights_path = os.path.join(os.getcwd(), "model_weights.pt")
+model.load_state_dict(torch.load(weights_path, weights_only=True))
+model.eval()
+
 
 # Function to handle audio recording
 def record_audio(timer_label, done_label):
@@ -41,9 +49,27 @@ def record_audio(timer_label, done_label):
     wf.writeframes(b"".join(frames))
     wf.close()
 
+    input_data = data_from_file(WAVE_OUTPUT_FILENAME)
+    diagnoses = get_diagnosis(device, input_data, model)
+    print(diagnoses)
+
     # Update GUI to show "Done"
-    done_label.config(text="Done")
     timer_label.config(text="Time: 0s")
+
+    if diagnoses_agree(diagnoses):
+        done_label.config(text=diagnoses[0])
+    else:
+        done_label.config(text="Can't determine diagnosis")
+
+
+def diagnoses_agree(diagnoses):
+    starting = diagnoses[0]
+
+    for diagnosis in diagnoses:
+        if starting != diagnosis:
+            return False
+
+    return True
 
 
 # Function to handle recording in a separate thread

@@ -12,7 +12,7 @@ from neural_network import *
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = DiagnosisNetwork().to(device)
 weights_path = os.path.join(os.getcwd(), "model_weights.pt")
-model.load_state_dict(torch.load(weights_path, weights_only=True))
+model.load_state_dict(torch.load(weights_path, weights_only=True, map_location=device))
 model.eval()
 
 

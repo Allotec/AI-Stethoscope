@@ -23,32 +23,24 @@ def data_from_file(file_name):
     for i in range(0, len(original_arr[0]) - 10000, 10000):
         arr = original_arr[0][i : i + 10000]
 
-        # Generate MFCCs
-        # Doing it this way makes the mfccs shape (20, 137)
-        mfccs = librosa.feature.mfcc(y=arr, sr=sample_rate)
+        # Generate Chroma features
+        chroma = librosa.feature.chroma_stft(y=arr.numpy(), sr=sample_rate)
 
         # Generate spectrogram image
         spectrogram = plt.specgram(arr, Fs=sample_rate)[0]
         plt.close()
 
-        mfccs_resized = (
-            torch.FloatTensor(mfccs).unsqueeze(0).unsqueeze(0)
-        )  # Add batch and channel dimensions
+       # Resize Chroma to match the spectrogram shape
+        chroma_resized = torch.FloatTensor(chroma).unsqueeze(0).unsqueeze(0)
+        chroma_resized = torch.nn.functional.interpolate(chroma_resized, size=(spectrogram.shape[0], spectrogram.shape[1]), mode='nearest')
 
-        # Resize using interpolation to match the dimensions
-        mfccs_resized = torch.nn.functional.interpolate(
-            mfccs_resized,
-            size=(spectrogram.shape[0], spectrogram.shape[1]),
-            mode="nearest",
-        )
-
-        # Convert spectrogram and mfccs to PyTorch tensors
+        # Convert spectrogram and Chromograph to PyTorch tensors
         spectrogram_tensor = (
             torch.FloatTensor(spectrogram).unsqueeze(0).unsqueeze(0)
         )  # Add batch and channel dimensions
 
         # Concatenate along a new dimension to create a tensor with two channels
-        combined_tensor = torch.cat((spectrogram_tensor, mfccs_resized), dim=1).squeeze(
+        combined_tensor = torch.cat((spectrogram_tensor, chroma_resized), dim=1).squeeze(
             0
         )
 
@@ -70,32 +62,26 @@ def process_data(file_name):
     for i in range(0, len(original_arr[0]) - 10000, 10000):
         arr = original_arr[0][i : i + 10000]
 
-        # Generate MFCCs
-        # Doing it this way makes the mfccs shape (20, 137)
-        mfccs = librosa.feature.mfcc(y=arr, sr=sample_rate)
+
+        # Generate Chroma features
+        chroma = librosa.feature.chroma_stft(y=arr.numpy(), sr=sample_rate)
 
         # Generate spectrogram image
         spectrogram = plt.specgram(arr, Fs=sample_rate)[0]
         plt.close()
 
-        mfccs_resized = (
-            torch.FloatTensor(mfccs).unsqueeze(0).unsqueeze(0)
-        )  # Add batch and channel dimensions
+       # Resize Chroma to match the spectrogram shape
+        chroma_resized = torch.FloatTensor(chroma).unsqueeze(0).unsqueeze(0)
+        chroma_resized = torch.nn.functional.interpolate(chroma_resized, size=(spectrogram.shape[0], spectrogram.shape[1]), mode='nearest')
 
-        # Resize using interpolation to match the dimensions
-        mfccs_resized = torch.nn.functional.interpolate(
-            mfccs_resized,
-            size=(spectrogram.shape[0], spectrogram.shape[1]),
-            mode="nearest",
-        )
 
-        # Convert spectrogram and mfccs to PyTorch tensors
+        # Convert spectrogram and Chromograph to PyTorch tensors
         spectrogram_tensor = (
             torch.FloatTensor(spectrogram).unsqueeze(0).unsqueeze(0)
         )  # Add batch and channel dimensions
 
         # Concatenate along a new dimension to create a tensor with two channels
-        combined_tensor = torch.cat((spectrogram_tensor, mfccs_resized), dim=1).squeeze(
+        combined_tensor = torch.cat((spectrogram_tensor, chroma_resized), dim=1).squeeze(
             0
         )
 

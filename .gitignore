@@ -5,3 +5,6 @@
 *.out
 *.pt
 *.wav
+*.bbl
+*.blg
+final_paper/ESE_534_Report.bbl

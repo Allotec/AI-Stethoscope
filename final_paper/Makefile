@@ -1,18 +1,15 @@
 .PHONY: all clean test gen_references
 
 REPORT_NAME = ESE_534_Report
-GARB_DIR = .out_files
+OUTPUT_FILES = $(REPORT_NAME).pdf $(REPORT_NAME).aux $(REPORT_NAME).log $(REPORT_NAME).out $(REPORT_NAME).bbl  $(REPORT_NAME).blg
 
-all: gen_references
+all: $(REPORT_NAME).pdf
 
-gen_references: $(REPORT_NAME).pdf
-	@pdflatex $(REPORT_NAME).tex $(REPORT_NAME).pdf
-	@mkdir -p $(GARB_DIR)
-	@mv ESE_534_Report.aux  ESE_534_Report.log  ESE_534_Report.out $(GARB_DIR)
-
-$(REPORT_NAME).pdf: $(REPORT_NAME).tex
-	@pdflatex $(REPORT_NAME).tex $(REPORT_NAME).pdf
+$(REPORT_NAME).pdf: $(REPORT_NAME).tex $(REPORT_NAME).bib
+	@pdflatex $(REPORT_NAME).tex $(REPORT_NAME).pdf 
+	@bibtex $(REPORT_NAME) || true
+	@pdflatex $(REPORT_NAME).tex $(REPORT_NAME).pdf 
+	@pdflatex $(REPORT_NAME).tex $(REPORT_NAME).pdf 
 
 clean:
-	@rm $(REPORT_NAME).pdf
-	@rm $(GARB_DIR)
+	@rm $(OUTPUT_FILES)

@@ -90,7 +90,7 @@ def record_audio(timer_label, done_label):
     timer_label.config(text="Time: 0s")
 
     if diagnoses_agree(diagnoses):
-        done_label.config(text=diagnoses[0])
+        done_label.config(text="Diagnosis: " + diagnoses[0])
     else:
         done_label.config(text="Can't determine diagnosis")
 

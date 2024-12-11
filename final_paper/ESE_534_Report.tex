@@ -13,7 +13,7 @@
 
 \begin{document}
 
-\title{Creating A Simple Electronic Stethoscope to Monitor Heart Related Problems Using Machine Learning}
+\title{Heart Condition Diagnosing via Machine Learning}
 \author{
   Champagne, Matthew \\
   \texttt{matthew.champagne@stonybrook.edu}
@@ -27,7 +27,7 @@
 
 \maketitle
 \section{Abstract} 
-yasmin to work on 
+
 
 \section{Key Words} 
 KEYWORDS: Machine Learning, Heart Disease, Electronic Stethoscope, Proactive Monitoring, Cardiovascular Disease Management, Telehealth 
@@ -60,6 +60,10 @@ patient’s chest, where the heartbeat creates soundwaves that makes the chestpi
 vibrations make its way through the tubing and into the earpieces. At this point the doctor 
 can begin to interpret the heartbeat and sounds. As shown in figure 3, there are four 
 common breathing sounds when using a stethoscope which all can be interpreted when diagnosing heart related problems. 
+
+\section{DATA COLLECTED}  
+The sound data was collected using a 3M Littmann Electronic Stethoscope model 3200, positioned on specific chest zones divided into upper, middle, and lower sections on both the left and right sides, including anterior and posterior locations. The stethoscope transmitted sound data to a computer via Bluetooth, and the 3M Littmann  StethAssist Visualization software was used to extract recordings in .wav format. The recordings were filtered through three modes (Bell, Diaphragm, and Extended) to emphasize different frequency ranges and highlight specific sound profiles.
+The dataset contained 112 participants aged 12 to 90 years including 43 females and 69 males. Among these, 35 were healthy, while 77 had respiratory conditions such as asthma (32), pneumonia (5), COPD (9), bronchitis (3), heart failure (21), lung fibrosis (5), and pleural effusion (2). Each participant contributed a single recording lasting 5–30 seconds from specific chest zones. The data files included annotations detailing health conditions, sound types, chest zones, and demographic information, making this dataset a valuable resource for developing algorithms for detecting and diagnosing pulmonary diseases.
 
 
 \cite{heart}

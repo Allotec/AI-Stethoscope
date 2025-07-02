@@ -17,6 +17,11 @@ upon the audio captured from a stethescope.
 3. [Final Project Presentation](https://docs.google.com/presentation/d/1EZRK4yBZxasGEvvpLq_ITC8wzQ_Pyq9NcL5rzugWilU/edit?usp=sharing)
 4. [Video Demo](https://www.youtube.com/watch?v=4_YsJ90r9eo)
 
+# Model Performance
+
+[Model Accuracy vs Epochs](./images/accuracy.png)
+[Model Loss vs Epochs](./images/loss.png)
+
 # References
 
 1. Link to dataset- https://data.mendeley.com/datasets/jwyy9np4gv/3

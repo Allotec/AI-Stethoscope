@@ -19,8 +19,8 @@ upon the audio captured from a stethescope.
 
 # Model Performance
 
-[Model Accuracy vs Epochs](./images/accuracy.png)
-[Model Loss vs Epochs](./images/loss.png)
+1. [Model Accuracy vs Epochs](./images/accuracy.png)
+2. [Model Loss vs Epochs](./images/loss.png)
 
 # References
 

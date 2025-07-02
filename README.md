@@ -12,9 +12,10 @@ upon the audio captured from a stethescope.
 
 # Presentations
 
-1. Project Proposal -> [Google Slides](https://docs.google.com/presentation/d/1aXbahbYvR3ogfZQphlLMT6WEJyvsSsBNSmaAJ0Ditho/edit?usp=sharing)
-2. Project Update -> [Google Slides](https://docs.google.com/presentation/d/1LXJPXgqKAhqQOGMH2-iJlxAw4sVpgobF7beq2gKrMow/edit?usp=sharing)
-3. Final Project Presentation -> [Google Slides](https://docs.google.com/presentation/d/1EZRK4yBZxasGEvvpLq_ITC8wzQ_Pyq9NcL5rzugWilU/edit?usp=sharing)
+1. [Project Proposal](https://docs.google.com/presentation/d/1aXbahbYvR3ogfZQphlLMT6WEJyvsSsBNSmaAJ0Ditho/edit?usp=sharing)
+2. [Project Update](https://docs.google.com/presentation/d/1LXJPXgqKAhqQOGMH2-iJlxAw4sVpgobF7beq2gKrMow/edit?usp=sharing)
+3. [Final Project Presentation](https://docs.google.com/presentation/d/1EZRK4yBZxasGEvvpLq_ITC8wzQ_Pyq9NcL5rzugWilU/edit?usp=sharing)
+4. [Video Demo](https://www.youtube.com/watch?v=4_YsJ90r9eo)
 
 # References
 
